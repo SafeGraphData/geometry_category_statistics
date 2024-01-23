@@ -63,3 +63,20 @@ for i, tab in enumerate(tabs[1:]):
         if i < len(styled_dfs):
             # st.write(f"{countries[i]} POI Count")
             st.dataframe(styled_dfs[i], use_container_width=True,hide_index=True)
+
+
+
+hide_streamlit_style = """
+            <style>
+            [data-testid="stToolbar"] {visibility: hidden !important;}
+            footer {visibility: hidden !important;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+hide_decoration_bar_style = '''
+    <style>
+        header {visibility: hidden;}
+    </style>
+'''
+st.markdown(hide_decoration_bar_style, unsafe_allow_html=True)
