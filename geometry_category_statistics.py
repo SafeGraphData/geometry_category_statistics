@@ -18,6 +18,9 @@ category_stats_df = read_from_gsheets("Category stats")\
     [["Country", "naics_2", "naics_code", "safegraph_category", "safegraph_subcategory", "industry_title", "total_poi_count", "poi_with_polygon_count", "Polygon coverage"]]\
     .astype({'total_poi_count': int,"poi_with_polygon_count":int, "Polygon coverage":float })
 
+category_stats_df['safegraph_subcategory'] = category_stats_df['safegraph_subcategory'].astype(str).replace("NaN", " ")
+category_stats_df['safegraph_category'] = category_stats_df['safegraph_category'].astype(str).replace("NaN", " ")
+
 global_df = category_stats_df.groupby(['naics_2', 'industry_title'])\
     .agg(total_poi_count=('total_poi_count', 'sum'), poi_with_polygon_count=("poi_with_polygon_count", "sum"))\
     .sort_values('poi_with_polygon_count', ascending=False)\
@@ -48,10 +51,11 @@ for country in countries:
     df['Polygon coverage'] = df['Polygon coverage'].astype(float).apply(lambda x: "{:.01f}%".format(x))
     dfs.append(df)
 
-styled_dfs = [
-    df.style.apply(lambda x: ['background-color: #D7E8ED' if i % 2 == 0 else '' for i in range(len(x))], axis=0)
-    for df in dfs
-]
+naics_possible_df['Category'] = naics_possible_df['NAICS Code'].astype(str) + " " + naics_possible_df['SafeGraph Category']\
+      + " " + naics_possible_df['SafeGraph Subcategory'] 
+
+
+possible_naics_codes = naics_possible_df['Category'].astype(str).unique()
 
 tabs = st.tabs(["Global"] + countries)
 with tabs[0]:
@@ -60,9 +64,21 @@ with tabs[0]:
 
 for i, tab in enumerate(tabs[1:]):
     with tab:
-        if i < len(styled_dfs):
-            # st.write(f"{countries[i]} POI Count")
-            st.dataframe(styled_dfs[i], use_container_width=True,hide_index=True)
+        if i < len(dfs):
+            naics_list = st.selectbox("NAICS Code:", [""] + possible_naics_codes.tolist(), key = i)
+            if naics_list:
+                styled_dfs = (
+                    dfs[i][dfs[i]['NAICS Code'].astype(str).str.startswith(naics_list.split(" ")[0])]\
+                        .style.apply(lambda x: ['background-color: #D7E8ED' if i % 2 == 0 else '' for i in range(len(x))], axis=0)
+                    )
+                # st.write(f"{countries[i]} POI Count")
+                st.dataframe(styled_dfs, use_container_width=True, hide_index=True)
+            else:
+                styled_dfs = (
+                    dfs[i].style.apply(lambda x: ['background-color: #D7E8ED' if i % 2 == 0 else '' for i in range(len(x))], axis=0)
+                    )
+                # st.write(f"{countries[i]} POI Count")
+                st.dataframe(styled_dfs, use_container_width=True, hide_index=True)
 
 
 
