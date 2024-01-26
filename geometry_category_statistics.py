@@ -51,6 +51,7 @@ for country in countries:
     df['Polygon coverage'] = df['Polygon coverage'].astype(float).apply(lambda x: "{:.01f}%".format(x))
     dfs.append(df)
 
+naics_possible_df = dfs[0]
 naics_possible_df['Category'] = naics_possible_df['NAICS Code'].astype(str) + " " + naics_possible_df['SafeGraph Category']\
       + " " + naics_possible_df['SafeGraph Subcategory'] 
 
